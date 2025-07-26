@@ -1,0 +1,165 @@
+---
+title: "Open Science Blogs"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+bibliography: references.bib
+---
+
+A decade ago you would have read this as a blog post. For a brief moment in time psychologists who were interested in improving science primarily communicated their ideas through the blogosphere, an informal network blogs. This relatively small community of people was later involved in creating more traditional outlets for their ideas (such as the journals Metapsychology and Advances in Methods and Practices in Psychological Science), as well as the preprint server PsyArXiv. But initially, blogs provided a popular form of communication for researchers interested in how science was done, and how it could be improved. At the peak (between 2014 and 2017) more than 250 blog posts were published each year on 40 different blogs. Blogs allowed for fast an unmediated communication between scholars, which was especially important when voicing criticism or unpopular ideas. A downside of blog posts as a means for scientific communication is that they are not archived or searchable. Several blogs no longer exist, and the knowledge about which blogs were part of the discussion will be lost over time. In order to archive these online discussions, I have created the Psychology Open Science Blog Archive, a searchable collection of blog posts that discussed topics related to what eventually would become known as the replication crisis in psychology [@lakens_concerns_2025; @lakens_concerns_2025a].
+
+## Blog Authors
+
+There is some inevitable subjectivity in which blogs should be included in this archive, and which not. The main inclusion criteria is that based on my personal recollection these blogs were followed and discussed by a loose collective of individuals interested in improving psychological science. Some blogs were more popular, were maintained for longer periods of time, and had larger readerships. Blogs often linked to other blogs (for an example, see the 'blogroll' on Sanjay Srivastava's blog '[The Hardest Science](https://thehardestscience.com/)'), and the blogger 'PsychBrief' (Patrick Langford) maintained an RSS feed of blogs (the list can be retrieved through the Wayback Machine at <https://web.archive.org/web/20190619125449/https://psychbrief.com/psychological-methods-blog-feed>). I have not included all blogs listed in these two sources, and have added others not on those lists. Furthermore, I have included several contributions by individuals who rarely blogged about open science, but who posted blogs that sparked discussion (i.e., John Bargh, Jason Mitchell, Susan Fiske, and Simone Schnall) and are therefore of historical value.
+
+A previous study of research methods blogs by [@nicolas_exploring_2019] Compared to Gandalf, I additionally included Dan Simons, Jim Grange, 100% CI, Alison Ledgerwood, Bobbie Spellman, PsychFileDrawer, John Bargh, Chris Chambers, Alex Holcombe, Dr Primestein, Etienne LeBel, Ian Hussey, Jake Westfall, James Heathers, Jason Mitchell, Jeff Rouder, Katie Corker, Lee Jussim, Lorne Cambell, Michael Inzlicht, Moin Syed, Nicole Janz, Rich Lucas, Ryne Sherman, Simone Schnall, Susan Fiske, and Will Gervais. I did not include Micah Allen, Neuroskeptic, Eiko Fried, James Coyne, Kristoffer Magnusson, Gideon Nave, Matti Heino, Deborah Mayo, John Kruschke, and Guillaume Rousselet.
+
+## Blog Contents
+
+## Popularity of blogs over time
+
+```{r load functions}
+#| include: false
+#| 
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+```
+
+Below we see an overview of when blog posts in the database appeared, and how many each blog contributed. 2016 was the year where most blog posts appeared, and 2017 was the year with the highest number of active blogs. There are clear changes across time in terms of activity for some of the blogs.
+
+```{r blogsperyear}
+# Blogs Per year
+
+# Count posts per author per year
+yearly_data <- blog_data %>%
+  mutate(year = year(date_clean)) %>%
+  count(author, year)
+
+# Fill in missing years per author with 0 posts
+all_years <- seq(min(yearly_data$year), max(yearly_data$year))
+
+yearly_filled <- yearly_data %>%
+  complete(author, year = all_years, fill = list(n = 0)) %>%
+  arrange(author, year)
+
+color_palette_50 <- c(
+  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
+  "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78",
+  "#98df8a", "#ff9896", "#c5b0d5", "#c49c94", "#f7b6d2", "#c7c7c7",
+  "#dbdb8d", "#9edae5", "#393b79", "#637939", "#8c6d31", "#843c39",
+  "#7b4173", "#5254a3", "#6b6ecf", "#9c9ede", "#8ca252", "#b5cf6b",
+  "#cedb9c", "#bd9e39", "#e7ba52", "#e7969c", "#d6616b", "#e377c2",
+  "#7f7f7f", "#bcbd22", "#17becf", "#1b9e77", "#d95f02", "#7570b3",
+  "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#666666", "#9467bd",
+  "#8dd3c7", "#fb8072"
+)
+
+# Plot
+ggplot(yearly_filled, aes(x = year, y = n, fill = author)) +
+  geom_area(position = "stack", color = NA, alpha = 0.95) +
+  scale_fill_manual(values = color_palette_50) +
+  scale_x_continuous(breaks = all_years) +
+  labs(
+    title = "Blog Posts per Year by Author",
+    x = "Year",
+    y = "Number of Posts",
+    fill = "Author"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "bottom")  # Optional
+
+```
+
+Below we can see when bloggers started and stopped.
+
+```{r startendtime}
+# Start and end time
+
+# Extract first and last blog post dates per author
+author_span_dates <- blog_posts %>%
+  filter(!is.na(date_clean)) %>%
+  group_by(author) %>%
+  summarise(
+    first_date = min(date_clean),
+    last_date = max(date_clean),
+    .groups = "drop"
+  )
+
+# Create a named color vector for authors
+authors <- unique(author_span_dates$author)
+author_colors <- setNames(color_palette_50[seq_along(authors)], authors)
+
+# Plot: line for span, point if only one post
+ggplot(author_span_dates, aes(y = reorder(author, first_date))) +
+  geom_segment(
+    data = subset(author_span_dates, first_date != last_date),
+    aes(x = first_date, xend = last_date, yend = author, color = author),
+    linewidth = 1.5
+  ) +
+  scale_color_manual(values = author_colors) +
+  labs(
+    title = "Time of first and last blog post",
+    x = "Date",
+    y = "Author",
+    color = "Author"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "none")
+
+```
+
+There is a variety of reasons why authors stopped blogging. Some blogs continued, but on another platforms such as medium of substack (this is true for Moin Syed, Michael Inzlicht, Rolf Zwaan, and Felix Schönbrodt). There is no strong justification to not scrape posts from these newer platforms, but I choose not to. Often, researchers have left academia. This is true for Tim van der Zee, Hannah Watkins, Ryne Sherman, Etienne LeBel, Joe Hilgard, Jake Westfall, Patrick Förscher, Tal Yarkoni, and Sanjay Svrivastiva. The last three are especially noteworthy as they were among the first to blog about science, and left tenured positions to work for a non-profit or Big Tech. Rolf Zwaan still uses his blog, but mainly to discuss his book and podcast (and these blogs have been excluded from the database). Simine Vazire stopped blogging when she became editor in chief of Psychological Science. Of course, for the blogs stat still exist, it is possible that researchers will add new posts in the future.
+
+From: https://psychbrief.wordpress.com/2017/01/25/improving-methods-feed/
+
+```{r}
+Gender
+
+#Create a string called "BlogName" with all the names of the different blogs in it
+BlogName<-c("Brown", "Coyne", "Allen", "Neurobonkers", "Sakaluk", "Heino", "Kruschke", "Giner-Sorolla", "Magnusson", "Zwaan", "CogTales", "Campbell", "Vanderkerckhove", "Mayo", "Funder", "Schonbrodt", "Fried", "Coyne", "Yarkoni", "Neuroskeptic", "JEPS", "Morey", "PsychBrief", "DataColada", "Innes-Ker", "Schwarzkopf", "PIG-E", "Rousselet", "Gelman", "Bishop", "Srivastava", "Vazire", "Etz", "Bastian", "Zee", "Schimmack", "Hilgard", "Rouder", "Lakens")
+#Create a vector called "BlogGender" with a string of numbers to represent either female, male, or N/a
+BlogGender<-c(2,2,2,2,2,2,2,2,2,2,1,2,2,1,2,2,2,2,2,2,3,2,1,2,2,2,1,2,2,1,2,1,2,1,2,2,2,2,2)
+#Turn BlogGender into a factor where 1 is labelled Female, 2 male, and 3 N/a
+BlogGender<-factor(BlogGender, levels= c(1:3), labels =c("Female","Male", "N/a"))
+#Create a data frame of the variable BlogName by the variable BlogGender
+Blogs<-data.frame(Name=BlogName, Gender=BlogGender)
+#Because I'm a peasant and can't work out how to create a graph straight from the data frame I created (though #I'm pretty sure I can't in its current form and don't know how to transform it into something that can be #mapped to a graph) I created one vector and one string with the number of male and female blog authors after #counting them up
+Gender<-c("Female", "Male")
+Frequency<-c(7,34)
+#Data frame of the vector and string
+Blogsdata<-data.frame(Gender,Frequency)
+#Graph object of the data frame with gender as the x axis and frequency as the y, coloured according to the variable Gender
+Gender_Graph<-ggplot(Blogsdata, aes(Gender, Frequency, fill=Gender))
+#Put bars on my graph object and give it a title
+Gender_Graph+geom_bar(stat="identity")+ ggtitle("Number of female blog authors compared to male blog authors")
+
+#Ethnicity
+BlogName<-c("Brown", "Coyne", "Allen", "Neurobonkers", "Sakaluk", "Heino", "Kruschke", "Giner-Sorolla", "Magnusson", "Zwaan", "CogTales", "Campbell", "Vanderkerckhove", "Mayo", "Funder", "Schonbrodt", "Fried", "Coyne", "Yarkoni", "Neuroskeptic", "JEPS", "Morey", "PsychBrief", "DataColada", "Innes-Ker", "Schwarzkopf", "PIG-E", "Rousselet", "Gelman", "Bishop", "Srivastava", "Vazire", "Etz", "Bastian", "Zee", "Schimmack", "Hilgard", "Rouder", "Lakens")
+Ethnlist<-c(1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,3,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1)
+BlogEthn<-factor(Ethnlist, levels= c(1:3), labels =c("White","Non-white", "N/a"))
+Ethn<-c("White", "Non-white")
+Frequency<-c(39, 2)
+Ethndata<-data.frame(Ethn,Frequency)
+EthnGraph<-ggplot(Ethndata, aes(Ethn, Frequency, fill=Ethn))
+EthnGraph+geom_bar(stat="identity")+ ggtitle("Number of non-white blog authors compared to white blog authors")
+
+ECR
+
+BlogName<-c("Brown", "Coyne", "Allen", "Neurobonkers", "Sakaluk", "Heino", "Kruschke", "Giner-Sorolla", "Magnusson", "Zwaan", "CogTales", "Campbell", "Vanderkerckhove", "Mayo", "Funder", "Schonbrodt", "Fried", "Coyne", "Yarkoni", "Neuroskeptic", "JEPS", "Morey", "PsychBrief", "DataColada", "Innes-Ker", "Schwarzkopf", "PIG-E", "Rousselet", "Gelman", "Bishop", "Srivastava", "Vazire", "Etz", "Bastian", "Zee", "Schimmack", "Hilgard", "Rouder", "Lakens")
+ECRlist<-c(1,2,2,3,1,1,2,2,1,2,1,1,2,2,2,2,2,2,2,2,2,3,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,2,2,2)
+BlogECR<-factor(ECRlist, levels= c(1:3), labels =c("Yes","No", "N/a"))
+ECR<-c("Yes", "No")
+Frequency<-c(9, 31)
+ECRdata<-data.frame(ECR,Frequency)
+ECRGraph<-ggplot(ECRdata, aes(ECR, Frequency, fill=ECR))
+ECRGraph+geom_bar(stat="identity")+ ggtitle("Number of non-ECR blog authors compared to ECR blog authors")
+```
+
+of which authors wrote blogs at this time, and they are not archived in a searchable database of the academic literature (but see <https://rogue-scholar.org/> for an initiative to assign DOI's to science blogs).
+
+were therefore were an excellent way to disseminate ideas (although at least one academic organization considered a proposal where there editors would not be allowed to blog (<https://web.archive.org/web/20220625135433/https://saideman.blogspot.com/2014/01/are-blogs-inherently-unprofessional.html>).
+
+John Bargh deleted both blog posts, but the blogs are included in the archive, and Susan Fiske adapted a blog post after online criticism (see <https://web.archive.org/web/20200929041345/https://www.discovermagazine.com/mind/terrorist-fiske-jab-on-destructo-criticism>), and both the original and adapted version were included in the archive.
