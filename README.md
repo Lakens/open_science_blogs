@@ -5,7 +5,8 @@ The discussions on these blogs were important for scholarly communication during
 
 # Shiny App and data file
 
-If you just want to explore the archive, download the repository, and in RStudio run the 'app.R' Shiny app. This will allow you to browse the full archive, search for keywords, or pick a random blog post, or explore what was happening on this date some years ago.
+If you just want to explore the archive, visit the Shiny app at: https://shiny.ieis.tue.nl/open_science_blogs/ 
+If you want to explore the archive locally (maybe because the shiny server is down), download the repository, and in RStudio run the 'app.R' Shiny app. This will allow you to browse the full archive, search for keywords, or pick a random blog post, or explore what was happening on this date some years ago. Make sure to install any required packages.
 If you want to use the data for analyses, then load blog_data.rds. It has the following columns: 
 - file: Local file name
 - title: Blog title
@@ -22,7 +23,7 @@ If you want to use the data for analyses, then load blog_data.rds. It has the fo
 
 In total 3530 blogs by the following 52 individuals or collectives have been archived (up to approximately July 2025):
 
-100% CI (Ruben Arslan, Malte Elson, Julia Rohrer, Anne Scheel)
+100% CI (Ruben Arslan, Malte Elson, Julia Rohrer, Anne Scheel)   
 Alex Holcombe  
 Alison Ledgerwood  
 Ana Todorovic
@@ -31,12 +32,12 @@ Bobbie Spellman
 Brent Donnellan  
 Brent Roberts  
 Chris Chambers  
-Cogtales (Christina Bergmann, Sho Tsuji)
+Cogtales (Christina Bergmann, Sho Tsuji)   
 Daniel Lakens  
 Dan Simons  
-Data Colada (Leif Nelson, Uri Simonsohn, Joe Simmons)
+Data Colada (Leif Nelson, Uri Simonsohn, Joe Simmons)   
 David Funder  
-Dorothy Bishop  
+Dorothy Bishop   
 Etienne Lebel  
 Felix Schönbrodt  
 Hannah Watkins  
@@ -104,7 +105,7 @@ Detailed instructions:
 5. Use the code wayback_machine_downloader https://website_link/ --to timestamp to download
 
 The Statistical Modeling blog does not allow for automated downloads, and individual blog posts were downloaded by searching for a range of keywords such as 'replication'. As posts appear almost daily, and there are many more posts on this blog than on all other blogs combined, and many are not related to the replication crisis, this targeted approach was used in order to not overwhelm the blog post database with posts from one blog.
-For Lee Jussim's and James Heathers' blogs I similarly went through all blog posts and downloaded those most relevant to the replication crisis. 
+For Lee Jussim's and James Heathers' blogs I similarly went through all blog posts and downloaded those most relevant to the replication crisis manually. 
 
 After these steps, there was some reproducible cleaning of data files, using the script clean_downloaded_osf_blogs.R in the folder processing_blogs_code. This was followed by non-reproducible and extensive manual cleaning of irrelevant files. Some files were recreated as html files from other archival sources. 
 The script process_openscience_blogs.R was used to retrieve the content, both in raw texts as in html, blog dates and titles. If blogs only included a month and year, but not the date of publishing, they were set to the first of the month.
@@ -113,4 +114,4 @@ The cleaned files were stored in a folder 'blogs_clean'. This 1.53 GB folder can
 All blogs were read into R from a local and stored as blog_data.rds. This only includes text.
 In the app folder there is a Shiny app that reads in a special version of the database. This loads all images locally. The download_or_copy_images.R script was used to get all images either from httrack downloaded blogs, or download them if blogs were still online. A special version of the html code is created where all links to images are changed so they point to the local images in the subfolder www/images. 
 
-There will be bugs, missing images, badly formatted text, and missing blogs, but this is as much as I have the time to do for now. 
+There will be bugs, missing images, badly formatted text, and missing blogs, but this is as much as I have the time to do for now. But feel free to leave pull requests or issues on this github repository and I will fix any issues that are identified in due time.
